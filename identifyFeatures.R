@@ -1,7 +1,13 @@
 # ===========
 # Description
 # ===========
-
+# Existing attribute tables are referenced in order to identify the catchments 
+#   to be edited. All catchments with a drainage area of 200 sq km or greater 
+#   are selected and the FEATUREIDs exported as the "splitCatchments.dbf" file. 
+#   Additionally, the feature immediately upstream of the furthest upstream 
+#   catchments are identified so the truncated flowlines may be extended to 
+#   complete the split. The FEATUREIDs are included with the selected catchments 
+#   and exported as the "splitLines.dbf" file.
 
 
 # ==============
@@ -16,13 +22,13 @@ library(dplyr)
 # ==============
 # Specify inputs
 # ==============
-# Location of tables with upstream areas
+# Location of attribute tables with upstream areas
 areaDirectory <- 'C:/KPONEIL/SHEDS/basinCharacteristics/zonalStatistics/versions/NHDHRDV2/rTables'
 
-# Location of tables with network structure
+# Location of attribute tables with network structure ("NextDownID" field)
 catchmentDirectory <- 'C:/KPONEIL/SHEDS/basinCharacteristics/zonalStatistics/gisFiles/vectors'
 
-# Location to output to
+# Directory to output to
 outDirectory <- 'C:/KPONEIL/HRD/V2.1/tables'
 
 # Hydro regions to process
@@ -34,11 +40,21 @@ hydroRegions <- c('01', '02', '03', '04', '05', '06')
 # ==========
 # Loop through regions and join relevant stats
 for (i in seq_along(hydroRegions)){
-  print(i)
-
-  structure <- read.dbf(paste0(catchmentDirectory, '/Catchments', hydroRegions[i], '.dbf'))[,c('FEATUREID', 'NextDownID')]
   
-  area <- read.csv(paste0(areaDirectory, '/Catchments', hydroRegions[i], '/upstream_AreaSqKM.csv'))
+  # Status update
+  print(i)
+  
+  # Network structure
+  structure <- read.dbf(paste0(catchmentDirectory, 
+                               '/Catchments', 
+                               hydroRegions[i], 
+                               '.dbf'))[,c('FEATUREID', 'NextDownID')]
+  
+  # Upstream areas
+  area <- read.csv(paste0(areaDirectory, 
+                          '/Catchments', 
+                          hydroRegions[i], 
+                          '/upstream_AreaSqKM.csv'))
   
   join <- left_join(structure, area, by = 'FEATUREID')
   
@@ -47,10 +63,6 @@ for (i in seq_along(hydroRegions)){
   }else(stats <- rbind(stats, join))
 }
 
-
-
-# The 2 catchments just upstream of the furthest upstream catchments are identified
-#   so the truncated flowlines may be extended to complete the split.
 
 # Identify catchments to split (remove headwater catchments)
 selectCats <- stats[which(stats$AreaSqKM >= 200),]
@@ -70,14 +82,9 @@ newHeads <- group_by(above, NextDownID) %>%
 splitLines <- rbind(splitCats, newHeads)
 
 
+# ======
+# Output
+# ======
 # Write tables
-write.dbf(stats,      file = file.path(outDirectory, 'stats.dbf'))
-write.dbf(splitCats,       file = file.path(outDirectory, 'splitCatchments.dbf'))
+write.dbf(splitCats,  file = file.path(outDirectory, 'splitCatchments.dbf'))
 write.dbf(splitLines, file = file.path(outDirectory, 'splitFlowlines.dbf'))
-
-
-
-
-
-
-
