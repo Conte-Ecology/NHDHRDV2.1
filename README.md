@@ -4,7 +4,7 @@
 This repository contains scripts used to update the NHDHRDV2 (link) catchment layers representing the immediate drainages into large rivers. Specifically, it is necessary to capture the small tributary drainages that flow directly into large rivers. In some cases these tributaries are too small to have been captured by the minimum drainage area threshold established in Version 2. Instead, the small tributaries are encompassed by a single catchment representing the area immediately flowing into a reach on the mainstem of a large river. 
 
 ![Version 2 Example](images/Figure1_small.png)
-
+![Final Version](images/Figure4.png)
 
 [[IMAGE]]. 
 
