@@ -38,7 +38,7 @@ Figure 5: Example of situation where 1 catchment is split into 4 <br><br>
 
 
 
-## Processing
+## Processing Steps
 A series of R and ArcPython scripts are used to create the new version of catchments.
 
 ### Pre-processing
