@@ -5,7 +5,7 @@ This repository contains scripts used to update the NHDHRDV2 (link) catchment la
 
 ![Version 2 Example](images/Figure1.png)
 
-Figure 1: Mainstem catchment with small tributary
+Figure 1: Mainstem catchment with small tributary <br><br>
 
 The update in Version 2.1 addresses the need to differentiate between the landscape attributes of the drainage contributing directly to the mainstem reaches from the reaches themselves which receive flow from a large upstream area. Edits are made exclusively to catchments with a drainage area of 200 sq km or greater. Each of these catchments is split into 3 new catchments: one representing the river channel, and one on each side of the channel representing the immediate contributing drainage area to the reach. 
 
@@ -13,26 +13,26 @@ The original catchment is split using the raw version of the truncated flowlines
 
 ![Catchment Split](images/Figure2.png)
 
-Figure 2: Mainstem catchment with flowline used for splitting
+Figure 2: Mainstem catchment with flowline used for splitting <br><br>
 
 The channel catchment is created using the stream grid layer from the delineation processing. The section of this rasterized version of the flowlines from Figure 2 that falls within the catchment defines the channel catchment. (Figure 3)
 
 ![Mainstem Catchment](images/Figure3.png)
 
-Figure 3: Mainstem catchment with flowline used for splitting
+Figure 3: Mainstem catchment with flowline used for splitting <br><br>
 
 The lateral catchments are defined by the areas on each side of the channel catchment within the original catchment. Typically, 1 catchment is split into 3 new catchents. In Figure 4
 
 ![Final Version](images/Figure4.png)
 
-Figure 4: Final version of catchments update with 2 lateral and 1 channel catchment
+Figure 4: Final version of catchments update with 2 lateral and 1 channel catchment <br><br>
 
 
 A note on confluences. Resolution differences exist between the raster and vector layers. At confluences within the network to be split, the two streams will create a fourth catchment. (Figure 5) At the farthest upstream catchment, this is avoided by only using the flowline with the larger drainage area for splitting. 
 
 ![4 Catchment Example](images/Figure5.png)
 
-Figure 5: Example of situation where 1 catchment is split into 4
+Figure 5: Example of situation where 1 catchment is split into 4 <br><br>
 
 
 
