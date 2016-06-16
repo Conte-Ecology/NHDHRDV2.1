@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!-- saved from url=(0014)about:internet -->
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+<meta http-equiv="x-ua-compatible" content="IE=9" >
+
+<title>NHDHRDV2.1</title>
+
+<style type="text/css">
+body, td {
+   font-family: sans-serif;
+   background-color: white;
+   font-size: 12px;
+   margin: 8px;
+}
+
+tt, code, pre {
+   font-family: 'DejaVu Sans Mono', 'Droid Sans Mono', 'Lucida Console', Consolas, Monaco, monospace;
+}
+
+h1 { 
+   font-size:2.2em; 
+}
+
+h2 { 
+   font-size:1.8em; 
+}
+
+h3 { 
+   font-size:1.4em; 
+}
+
+h4 { 
+   font-size:1.0em; 
+}
+
+h5 { 
+   font-size:0.9em; 
+}
+
+h6 { 
+   font-size:0.8em; 
+}
+
+a:visited {
+   color: rgb(50%, 0%, 50%);
+}
+
+pre {	
+   margin-top: 0;
+   max-width: 95%;
+   border: 1px solid #ccc;
+   white-space: pre-wrap;
+}
+
+pre code {
+   display: block; padding: 0.5em;
+}
+
+code.r, code.cpp {
+   background-color: #F8F8F8;
+}
+
+table, td, th {
+  border: none;
+}
+
+blockquote {
+   color:#666666;
+   margin:0;
+   padding-left: 1em;
+   border-left: 0.5em #EEE solid;
+}
+
+hr {
+   height: 0px;
+   border-bottom: none;
+   border-top-width: thin;
+   border-top-style: dotted;
+   border-top-color: #999999;
+}
+
+@media print {
+   * { 
+      background: transparent !important; 
+      color: black !important; 
+      filter:none !important; 
+      -ms-filter: none !important; 
+   }
+
+   body { 
+      font-size:12pt; 
+      max-width:100%; 
+   }
+       
+   a, a:visited { 
+      text-decoration: underline; 
+   }
+
+   hr { 
+      visibility: hidden;
+      page-break-before: always;
+   }
+
+   pre, blockquote { 
+      padding-right: 1em; 
+      page-break-inside: avoid; 
+   }
+
+   tr, img { 
+      page-break-inside: avoid; 
+   }
+
+   img { 
+      max-width: 100% !important; 
+   }
+
+   @page :left { 
+      margin: 15mm 20mm 15mm 10mm; 
+   }
+     
+   @page :right { 
+      margin: 15mm 10mm 15mm 20mm; 
+   }
+
+   p, h2, h3 { 
+      orphans: 3; widows: 3; 
+   }
+
+   h2, h3 { 
+      page-break-after: avoid; 
+   }
+}
+
+</style>
+
+
+
+
+
+</head>
+
+<body>
+<h1>NHDHRDV2.1</h1>
+
+<p>This repository contains scripts used to update the NHDHRDV2 (link) catchment layers representing the immediate drainages into large rivers. Specifically, it is necessary to capture the small tributary drainages that flow directly into large rivers. In some cases these tributaries are too small to have been captured by the minimum drainage area threshold established in Version 2. Instead, the small tributaries are encompassed by a single catchment representing the area immediately flowing into a reach on the mainstem of a large river [[IMAGE]]. </p>
+
+<p>The update in Version 2.1 addresses the need to differentiate between the landscape attributes of the drainage contributing directly to the mainstem reaches from the reaches themselves which receive flow from a large upstream area. Edits are made only to catchments with a 200 sq km or greater drainage area. Each of these catchments is split into 3 new catchments: one representing the river channel, and one on each side of the channel representing the immediate contributing drainage area to the reach. [[IMAGE]]</p>
+
+<h1>Processing</h1>
+
+<p>A series of R and ArcPython scripts are used to create the new version of catchments.</p>
+
+<h2>Pre-processing</h2>
+
+<p>Interim layers from the delineaiton processing in Version 2 are used in this update. The <code>strLnkFinal</code> raster layer and <code>correctFlowlines</code> vector layer are both used in creating the new catchments. These layers exist by hydrologic region only and must be aggregated to create layers for the entire range before use in the Version 2.1 processing. This is done simply using the &ldquo;Merge&rdquo; tool for the vector layers and the &ldquo;Mosaic to New Raster&rdquo; tool for the raster layers. </p>
+
+<h2>Identify Features to Split</h2>
+
+<h3>Description</h3>
+
+<p>The existing catchment attribute tables are used to determine which catchments will be broken into separate channel and landscape(name?) sections. A total upstream drainage area (measured from the pour point of the catchment) is set at 200 sq km. The process generates two tables to indicate the catchments to be split and the flowlines used to do the splitting.</p>
+
+<h3>Execution</h3>
+
+<p>Open the <code>identifyFeatures.R</code> script. In the &ldquo;Specify inputs&rdquo; section change the following variables: </p>
+
+<ul>
+<li>areaDirectory  - The directory containing the catchment attribute tables defining upstream area</li>
+<li>catchmentDirectory - The directory containing the catchment attribute tables defining the network structure. These tables are the DBF files associated with the spatial catchment layers.</li>
+<li>outDirectory - The directory to ouput the tables to</li>
+<li>hydroRegions - The hydrologic regions of NHDHRDV2 to be processed</li>
+</ul>
+
+<p>Execute the script in R. </p>
+
+<h3>Output</h3>
+
+<p>Two separate tables are generated. The <code>splitCatchments.dbf</code> indicates the catchments to be edited. The <code>splitFlowlines.dbf</code> table indicates the flowlines used to split the catchments. The tables will be used in the spatial processing and include the FEATUREID, upstream drainage area, and the network structure field (&ldquo;NextDownID&rdquo;). The flowlines table differs in that it contains one feature extending upstream so as to preserve continuity when splitting the catchments. </p>
+
+<h2>Split the Catchments</h2>
+
+<h3>Description</h3>
+
+<p>The spatial processing is divided into two scripts. The first script splits apart the select catchments using the raw version of the <code>truncatedFlowlines</code> layer from the Version 2 processing steps. These layers, the <code>correctedFlowlines</code> have not been smoothed and line up more cleanly with the catchments since both are derived directly from the same 30m DEM.</p>
+
+<h3>Execution</h3>
+
+<p>Because the number of catchments to edit is small enough, the script does not loop through the different hydrologic zones and instead refers to the aggregated layer of all catchments. </p>
+
+<p>Open the <code>splitCatchments.py</code> script. In the &ldquo;Specify inputs&rdquo; section change the following variables: </p>
+
+<ul>
+<li>catchments - The path to the aggregated spatial layer of all of the existing catchments from Version 2. </li>
+<li>flowlines - The path to the aggregated spatial layer of all of the raw truncated flowlines from Version 2. </li>
+<li>splitFlowlines - The path to the table of flowlines created from the previous step. </li>
+<li>splitCatchments - The path to the table of catchments created from the previous step. </li>
+<li>baseDirectory - The parent directory of the Version 2.1 project</li>
+</ul>
+
+<p>Execute the script in Arc Python. This script may run into some issues in Arc. The use of the &ldquo;Erase&rdquo; tool in this case can cause the program to crash without warning or error report. If this happens, reopen the program and redefine the script up to the end of the &ldquo;Define Functions&rdquo; section. Delete the partially created layers (e.g. &ldquo;select_polygons_erase&rdquo;) and re-run the script from the end of the last successfully completed process. This is likely just re-executing the &ldquo;Erase&rdquo; tool. </p>
+
+<h3>Output</h3>
+
+<p>The script outputs a number of layers during the processing, two of which are used in the next script. The <code>cats</code> layer represents the catchments to be edited, indicated by the <code>splitCatchments.dbf</code> table. The <code>mainstem_split_catchments</code> layer is the product of the <code>cats</code> layer being split by the selected <code>correctedFlowlines</code>. Both of these layers are used in the next script to generate the final product.</p>
+
+<h2>Create Channel Catchments</h2>
+
+<h3>Description</h3>
+
+<p>The second spatial processsing script finalizes the new catchments. The main channel catchments are generated and merged  with the existing split landscape catchments. The resulting layer is the new version of the selected catchments, set to replace the matching catchments from Version 2. </p>
+
+<h3>Execution</h3>
+
+<p>Open the <code>addChannelCatchments.py</code> script. In the &ldquo;Specify inputs&rdquo; section change the following variables: </p>
+
+<ul>
+<li>baseDirectory - The parent directory of the Version 2.1 project</li>
+<li>flowGrid - The path to the aggregated stream grid for all regions from Version 2. </li>
+</ul>
+
+<p>Execute the script in Arc Python. </p>
+
+<h3>Output</h3>
+
+<p>The script outputs the <code>mainstemCatchments.shp</code> layer. This layer is the finalized version of the edited catchments that may be joined into the original catchment layers from Version 2. </p>
+
+<h2>Edit Original Catchments</h2>
+
+<h3>Description</h3>
+
+<p>This script joins the split catchments from the <code>mainstemCatchments.shp</code> layer into the existing catchment layers.</p>
+
+<h3>Execution</h3>
+
+<p>Open the <code>incorporateNewCatchments.py</code> script. In the &ldquo;Specify inputs&rdquo; section change the following variables: </p>
+
+<ul>
+<li>baseDirectory - The parent directory of the Version 2.1 project</li>
+<li>hydroRegions - The hydrologic regions of NHDHRDV2 to be processed</li>
+<li>original_db - The path to geodatabase containing all of the existing catchments layers</li>
+</ul>
+
+<p>Execute the script in Arc Python. </p>
+
+<h3>Output</h3>
+
+<p>The catchment layer for each region (e.g. <code>Catchments01</code>) are output to the previously created <code>hydrography.gdb</code> geodatabase in the <code>products</code> subfolder. Newly created catchments are assigned new FEATUREIDs. An additional column called &ldquo;NativeID&rdquo; is added to the attribute table to indicate the original FEATUREID. Additionally, the &ldquo;Source&rdquo; column of the edited catchments is updated to read: &ldquo;Mainstem Split&rdquo;.</p>
+
+</body>
+
+</html>
+

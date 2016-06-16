@@ -14,6 +14,7 @@
 # ==============
 import arcpy
 
+
 # ==============
 # Specify inputs
 # ==============
@@ -186,7 +187,7 @@ arcpy.Delete_management("rawPolygonsLyr")
 #   vertex (e.g. 2 touching cell corners). These pieces need to be dissolved back 
 #   together without dissolving across the split lines. A small buffer polygon is 
 #   generated to separate adjacent, but intentionally split polygons. Then, the 
-#   polygong are buffered by an even smaller (10x) buffer to create connection 
+#   polygons are buffered by an even smaller (1/10x) buffer to create connection 
 #   between polygon pieces needing to be joined. This allows adjacent, but 
 #   unintentionally split, pieces to be dissolved by a common field as needed 
 #   without undoing the work of the split. 
